@@ -155,7 +155,7 @@ public class VMPerformanceCollector {
 						"yyyy/MM/dd hh:mm:ss");
 				StringBuffer str = new StringBuffer();
 				str.append("timestamp:" + format.format(date));
-				str.append("\t" + "vmname:" + vm.getName());
+				str.append(",vmname:" + vm.getName());
 				if ("VM02".equals(vm.getName())) {
 
 					HashMap<String, HashMap<String, String>> metricsMap = perColl
@@ -166,26 +166,30 @@ public class VMPerformanceCollector {
 								.get(metricNam);
 						for (String p : metricProps.keySet()) {
 							if (ConstantUtil.PARAMETER_LIST.contains(p)) {
-								str.append(" " + p + ":" + metricProps.get(p));
+								str.append("," + p + ":" + metricProps.get(p));
 							}
 						}
 					}
 
 					try {
-						File file = new File("/var/log/logging.log");
+						File file = new File("home/kunal/logging.log");
 						if (!file.exists()) {
 							file.createNewFile();
 						}
 
-						FileWriter fw = new FileWriter(file.getAbsoluteFile());
+						FileWriter fw = new FileWriter(file.getAbsoluteFile(),true);
 						BufferedWriter bw = new BufferedWriter(fw);
-						bw.write(str.toString());
+						bw.append(str.toString());
+						bw.append("\n");
+						bw.flush();
 						bw.close();
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
+					
 				}
 			}
+			Thread.currentThread().sleep(10000);
 		}
 	}
 
