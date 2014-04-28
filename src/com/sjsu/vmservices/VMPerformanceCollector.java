@@ -1,13 +1,17 @@
 package com.sjsu.vmservices;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.RemoteException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-
-import org.apache.log4j.Logger;
 
 import com.vmware.vim25.PerfCounterInfo;
 import com.vmware.vim25.PerfEntityMetric;
@@ -25,11 +29,7 @@ import com.vmware.vim25.mo.ServiceInstance;
 import com.vmware.vim25.mo.VirtualMachine;
 
 public class VMPerformanceCollector {
-
-	private static Logger logger=Logger.getLogger("");
 	private static HashMap<Integer, PerfCounterInfo> headerInfo = new HashMap<Integer, PerfCounterInfo>();
-
-	
 	private int maxSamples;
 	private String username;
 	private String password;
@@ -43,16 +43,16 @@ public class VMPerformanceCollector {
 		this.password = password;
 		this.maxSamples = maxSamples;
 		this.vmList = new ArrayList<VirtualMachine>();
-		ServiceInstance si = new ServiceInstance(url, username, password,true);
+		ServiceInstance si = new ServiceInstance(url, username, password, true);
 		Folder rootFolder = si.getRootFolder();
 
-		//Make a list of all the VMs
+		// Make a list of all the VMs
 		ManagedEntity[] vmsEntity = new InventoryNavigator(rootFolder)
 				.searchManagedEntities("VirtualMachine");
 		for (int i = 0; i < vmsEntity.length; i++) {
 			vmList.add((VirtualMachine) vmsEntity[i]);
 		}
-		
+
 		PerformanceManager performanceManager = si.getPerformanceManager();
 		PerfCounterInfo[] infos = performanceManager.getPerfCounter();
 		for (PerfCounterInfo info : infos) {
@@ -64,7 +64,7 @@ public class VMPerformanceCollector {
 			String vmName) throws Exception {
 
 		ServiceInstance serviceInstance = new ServiceInstance(url, username,
-				password,true);
+				password, true);
 		InventoryNavigator inventoryNavigator = new InventoryNavigator(
 				serviceInstance.getRootFolder());
 		VirtualMachine virtualMachine = (VirtualMachine) inventoryNavigator
@@ -117,30 +117,25 @@ public class VMPerformanceCollector {
 						result += v;
 					}
 					result = (long) (result / values.length);
-					value = String.valueOf(result);// + " "
-							//+ info.getUnitInfo().getLabel();
-					//System.out.println("If Valuuee--->"+value);
+					value = String.valueOf(result);
 				} else if (pm instanceof PerfMetricSeriesCSV) {
 					PerfMetricSeriesCSV seriesCsv = (PerfMetricSeriesCSV) pm;
 					value = seriesCsv.getValue() + " in "
 							+ info.getUnitInfo().getLabel();
-					//System.out.println("Else Value--->"+value);
 				}
 
 				HashMap<String, String> properties;
 				if (propertyGroups.containsKey(info.getGroupInfo().getKey())) {
-					//System.out.println("info.getGroupInfo().getKey())==>"+info.getGroupInfo().getKey());
-					properties = propertyGroups.get(info.getGroupInfo().getKey());
+					properties = propertyGroups.get(info.getGroupInfo()
+							.getKey());
 				} else {
 					properties = new HashMap<String, String>();
-					propertyGroups.put(info.getGroupInfo().getKey(), properties);
-					//System.out.println("Else -- info.getGroupInfo().getKey())==>"+info.getGroupInfo().getKey());
+					propertyGroups
+							.put(info.getGroupInfo().getKey(), properties);
 				}
 
-				/*String propName = String.format("[%s.%s]", info.getNameInfo().getKey(), 
-						info.getRollupType());*/
-				String propName =  String.format("%s_%s", info.getGroupInfo().getKey(), info.getNameInfo().getKey());
-				//System.out.println("Property Name:"+propName);
+				String propName = String.format("%s_%s", info.getGroupInfo()
+						.getKey(), info.getNameInfo().getKey());
 				properties.put(propName, value);
 			}
 		}
@@ -149,55 +144,50 @@ public class VMPerformanceCollector {
 	}
 
 	public static void main(String[] args) throws Exception {
-			VMPerformanceCollector perColl = new VMPerformanceCollector(
-					new URL(ConstantUtil.URL), ConstantUtil.ADMIN_USER_NAME,
-					ConstantUtil.ADMIN_PASSWORD, 3);
-			while (true) {
+		VMPerformanceCollector perColl = new VMPerformanceCollector(new URL(
+				ConstantUtil.URL), ConstantUtil.ADMIN_USER_NAME,
+				ConstantUtil.ADMIN_PASSWORD, 3);
+
+		while (true) {
 			for (VirtualMachine vm : perColl.getVmList()) {
-				//System.out.println("--->"+vm.getName());
+				Date date = new Date(System.currentTimeMillis());
+				SimpleDateFormat format = new SimpleDateFormat(
+						"yyyy/MM/dd hh:mm:ss");
 				StringBuffer str = new StringBuffer();
-				str.append(vm.getName());
-				if ("VM02".equals(vm.getName())
-						|| "VM01".equals(vm.getName())) {
+				str.append("timestamp:" + format.format(date));
+				str.append("\t" + "vmname:" + vm.getName());
+				if ("VM02".equals(vm.getName())) {
 
 					HashMap<String, HashMap<String, String>> metricsMap = perColl
 							.getPerformanceMetrics(vm.getName());
-					/*for (String metricName : metricsMap.keySet()) {
-						System.out.println(metricName);
-						HashMap<String, String> metricProps = metricsMap.get(metricName);
-						str.append(metricName+"::");
-						for (String p : metricProps.keySet()) {
-							//System.out.println("P is "+p);
-							Map<String, String> propList = new ArrayList<>();
-							if(ConstantUtil.paramterList.contains(p)){
-								propList.add
-								str.append("\t" + p + ": " + metricProps.get(p));
-								System.out.println("\t" + p + ": " + metricProps.get(p));
-							}
-						}
-					}*/
 
-					////new
 					for (String metricNam : ConstantUtil.METRIC_LIST) {
-						//System.out.println(metricNam);
 						HashMap<String, String> metricProps = metricsMap
 								.get(metricNam);
-						//str.append(" ");
 						for (String p : metricProps.keySet()) {
-							//System.out.println("P is "+p);
 							if (ConstantUtil.PARAMETER_LIST.contains(p)) {
 								str.append(" " + p + ":" + metricProps.get(p));
-								//System.out.println("\t" + p + ": " + metricProps.get(p));
 							}
 						}
 					}
-					logger.info(str);
+
+					try {
+						File file = new File("/var/log/logging.log");
+						if (!file.exists()) {
+							file.createNewFile();
+						}
+
+						FileWriter fw = new FileWriter(file.getAbsoluteFile());
+						BufferedWriter bw = new BufferedWriter(fw);
+						bw.write(str.toString());
+						bw.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 				}
-			}//end of for --> vmList
-			Thread.currentThread().sleep(10000);
-		}//end of while loop
+			}
+		}
 	}
-	
 
 	/**
 	 * @return the vmList
@@ -207,7 +197,8 @@ public class VMPerformanceCollector {
 	}
 
 	/**
-	 * @param vmList the vmList to set
+	 * @param vmList
+	 *            the vmList to set
 	 */
 	public void setVmList(List<VirtualMachine> vmList) {
 		this.vmList = vmList;
