@@ -25,4 +25,6 @@ public class ConstantUtil {
 	
 	public static List<String> PROJECT_PARAMETER_LIST_DRS2 = new ArrayList<String>(
 			Arrays.asList("cpu_usage"));
+	
+	public static String SSL_THUMBPRINT_HOST_143 = "48:D7:11:E0:09:4E:24:5F:99:C6:5B:4C:62:12:48:65:3A:3A:DD:80";
 }
