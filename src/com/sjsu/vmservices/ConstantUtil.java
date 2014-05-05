@@ -19,12 +19,10 @@ public class ConstantUtil {
 					"net_usage","net_received","net_transmitted",
 					"power_power",
 					"sys_uptime"));
-	/*public static List<String> PARAMETER_LIST = new ArrayList<String>(
-			Arrays.asList("cpu.usage","cpu.usagemhz",
-					"datastore.totalWriteLatency", "datastore.totalReadLatency",
-					"diskwrite", "disk.read", "disk.maxTotalLatency",  "disk.usage",
-					"mem.granted", "mem.consumed","mem.active","mem.vmmemctl",
-					"net.usage","net.received","net.transmitted",
-					"power.power",
-					"sys.uptime"));*/
+	
+	public static List<String> PROJECT_PARAMETER_LIST_DRS1 = new ArrayList<String>(
+			Arrays.asList("cpu_usagemhz"));
+	
+	public static List<String> PROJECT_PARAMETER_LIST_DRS2 = new ArrayList<String>(
+			Arrays.asList("cpu_usage"));
 }

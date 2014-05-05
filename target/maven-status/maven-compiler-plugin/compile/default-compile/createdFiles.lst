@@ -1,2 +1,5 @@
+com\sjsu\vmservices\VHostCPUMonitor_DR1.class
+com\sjsu\vmservices\VHostCPUMonitor_DR2.class
 com\sjsu\vmservices\ConstantUtil.class
+com\sjsu\vmservices\VHostPowerMonitor_DPM.class
 com\sjsu\vmservices\VMPerformanceCollector.class

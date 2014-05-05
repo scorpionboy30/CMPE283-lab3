@@ -170,9 +170,9 @@ public class VMPerformanceCollector {
 							}
 						}
 					}
-
+					
 					try {
-						File file = new File("home/kunal/logging.log");
+						File file = new File("logging.log");
 						if (!file.exists()) {
 							file.createNewFile();
 						}
